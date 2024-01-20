@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Search</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        .search-results {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .search-results li {
+            cursor: pointer;
+            margin: 5px;
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<input type="text" id="searchBar" placeholder="Search..." oninput="highlightText()">
+<ul id="searchResults" class="search-results"></ul>
+
+<table id="dataTable" border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Country</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>John Doe</td>
+            <td>30</td>
+            <td>USA</td>
+        </tr>
+        <tr>
+            <td>Jane Smith</td>
+            <td>25</td>
+            <td>Canada</td>
+        </tr>
+        <!-- Add more rows as needed -->
+    </tbody>
+</table>
+
+<script>
+    function highlightText() {
+        var searchText = document.getElementById('searchBar').value.trim().toLowerCase();
+        var table = document.getElementById('dataTable');
+        var rows = table.getElementsByTagName('tr');
+        
+        removeHighlights();
+        clearSearchResults();
+
+        if (searchText !== '') {
+            var results = [];
+            for (var i = 1; i < rows.length; i++) {  // Start from index 1 to skip the header row
+                var cells = rows[i].getElementsByTagName('td');
+                var rowContent = '';
+                for (var j = 0; j < cells.length; j++) {
+                    rowContent += cells[j].textContent.trim().toLowerCase() + ' ';
+                }
+
+                if (rowContent.includes(searchText)) {
+                    rows[i].classList.add('highlight');
+                    results.push({
+                        element: rows[i],
+                        text: rowContent
+                    });
+                }
+            }
+
+            displaySearchResults(results);
+        }
+    }
+
+    function removeHighlights() {
+        var highlightedRows = document.querySelectorAll('.highlight');
+        highlightedRows.forEach(function (row) {
+            row.classList.remove('highlight');
+        });
+    }
+
+    function clearSearchResults() {
+        var searchResults = document.getElementById('searchResults');
+        searchResults.innerHTML = '';
+    }
+
+    function displaySearchResults(results) {
+        var searchResults = document.getElementById('searchResults');
+        results.forEach(function (result, index) {
+            var li = document.createElement('li');
+            li.textContent = result.text;
+            li.onclick = function () {
+                result.element.scrollIntoView({ behavior: 'smooth' });
+            };
+            searchResults.appendChild(li);
+        });
+    }
+</script>
+
+</body>
+</html>

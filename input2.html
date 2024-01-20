@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Highlighter</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+        .search-results {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .search-results li {
+            cursor: pointer;
+            margin: 5px;
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<input type="text" id="searchBar" placeholder="Search..." oninput="highlightText()">
+<ul id="searchResults" class="search-results"></ul>
+
+<div id="content">
+    <p>This is some sample text. Search for keywords to highlight them.</p>
+    <p>Another paragraph with different content. Searching is case-sensitive.</p>
+</div>
+
+<script>
+    function highlightText() {
+        // Get the search input value
+        var searchText = document.getElementById('searchBar').value;
+
+        // Reset previous highlights and search results
+        removeHighlights();
+        clearSearchResults();
+
+        if (searchText.trim() !== '') {
+            // Create a regular expression with the search text and word boundaries
+            var regex = new RegExp('\\b' + searchText + '\\b', 'gi');
+
+            // Get the content element
+            var content = document.getElementById('content');
+
+            // Iterate through text nodes and highlight matches
+            var results = highlightMatches(content, regex);
+            
+            // Display search results below the search bar
+            displaySearchResults(results);
+        }
+    }
+
+    function highlightMatches(element, regex) {
+        var results = [];
+
+        if (element.nodeType === 3) {  // Text node
+            var matches = element.nodeValue.match(regex);
+            if (matches) {
+                var span = document.createElement('span');
+                span.className = 'highlight';
+                element.parentNode.insertBefore(span, element);
+
+                matches.forEach(function (match) {
+                    var index = element.nodeValue.indexOf(match);
+                    var before = element.nodeValue.substring(0, index);
+                    var after = element.nodeValue.substring(index + match.length);
+
+                    var textNodeBefore = document.createTextNode(before);
+                    var textNodeMatch = document.createTextNode(match);
+                    var textNodeAfter = document.createTextNode(after);
+
+                    span.appendChild(textNodeBefore);
+                    span.appendChild(textNodeMatch);
+
+                    element.parentNode.removeChild(element);
+
+                    if (after) {
+                        span.appendChild(textNodeAfter);
+                    }
+                });
+
+                // Store the result for later navigation
+                results.push({
+                    element: span,
+                    text: span.textContent
+                });
+            }
+        } else if (element.nodeType === 1) {  // Element node
+            for (var i = 0; i < element.childNodes.length; i++) {
+                results = results.concat(highlightMatches(element.childNodes[i], regex));
+            }
+        }
+
+        return results;
+    }
+
+    function removeHighlights() {
+        var highlights = document.querySelectorAll('.highlight');
+        highlights.forEach(function (highlight) {
+            var parent = highlight.parentNode;
+            while (highlight.firstChild) {
+                parent.insertBefore(highlight.firstChild, highlight);
+            }
+            parent.removeChild(highlight);
+        });
+    }
+
+    function clearSearchResults() {
+        var searchResults = document.getElementById('searchResults');
+        searchResults.innerHTML = '';
+    }
+
+    function displaySearchResults(results) {
+        var searchResults = document.getElementById('searchResults');
+        results.forEach(function (result, index) {
+            var li = document.createElement('li');
+            li.textContent = result.text;
+            li.onclick = function () {
+                result.element.scrollIntoView({ behavior: 'smooth' });
+            };
+            searchResults.appendChild(li);
+        });
+    }
+</script>
+
+</body>
+</html>
