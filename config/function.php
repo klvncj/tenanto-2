@@ -644,3 +644,4 @@ function SendMessage($post)
         $errors[] = $th;
     }
 }
+
